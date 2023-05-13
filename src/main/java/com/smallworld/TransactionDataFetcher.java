@@ -61,10 +61,12 @@ public class TransactionDataFetcher {
      */
     public Map<String, Object> getTransactionsByBeneficiaryName() {
         Map<String, Object> stringObjectHashMap = new HashMap<>();
-        Map<String, List<TransactionDetailsDAO>> stringIntegerMap = transactionsFileReader.transactionDetailsDAOList.stream().collect(Collectors.groupingBy(TransactionDetailsDAO::getBeneficiaryFullName));
+        Map<String, List<TransactionDetailsDAO>> stringIntegerMap =
+                transactionsFileReader.transactionDetailsDAOList.stream()
+                        .collect(Collectors.groupingBy(TransactionDetailsDAO::getBeneficiaryFullName));
         for (Map.Entry<String, List<TransactionDetailsDAO>> entry : stringIntegerMap.entrySet()) {
             List<TransactionDetailsDAO> beneficiaryTransactions = entry.getValue();
-            stringIntegerMap.put(entry.getKey(), beneficiaryTransactions);
+            stringObjectHashMap.put(entry.getKey(), beneficiaryTransactions);
         }
         return stringObjectHashMap;
     }
@@ -74,7 +76,7 @@ public class TransactionDataFetcher {
      */
     public Set<Integer> getUnsolvedIssueIds() {
         return transactionsFileReader.transactionDetailsDAOList.stream()
-                .filter((transactionDetailsDAO -> transactionDetailsDAO.getIssueSolved()))
+                .filter((transactionDetailsDAO -> !(transactionDetailsDAO.getIssueSolved())))
                 .map(transactionDetailsDAO -> transactionDetailsDAO.getIssueId()).collect(Collectors.toSet());
     }
 
@@ -82,14 +84,17 @@ public class TransactionDataFetcher {
      * Returns a list of all solved issue messages
      */
     public List<String> getAllSolvedIssueMessages() {
-        return transactionsFileReader.transactionDetailsDAOList.stream().filter(transactionDetailsDAO -> transactionDetailsDAO.getIssueSolved()).map(transactionDetailsDAO -> transactionDetailsDAO.getIssueMessage()).collect(Collectors.toList());
+        return transactionsFileReader.transactionDetailsDAOList.stream()
+                .filter(transactionDetailsDAO -> transactionDetailsDAO.getIssueSolved()).map(transactionDetailsDAO -> transactionDetailsDAO.getIssueMessage()).collect(Collectors.toList());
     }
 
     /**
      * Returns the 3 transactions with highest amount sorted by amount descending
      */
-    public List<Object> getTop3TransactionsByAmount() {
-        return transactionsFileReader.transactionDetailsDAOList.stream().sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).limit(3).collect(Collectors.toList());
+    public List<TransactionDetailsDAO> getTop3TransactionsByAmount() {
+        return transactionsFileReader.transactionDetailsDAOList.stream()
+                .sorted((o1, o2) -> Double.compare(o2.getAmount(), o1.getAmount())).limit(3)
+                .collect(Collectors.toList());
     }
 
     /**
